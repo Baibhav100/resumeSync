@@ -786,7 +786,8 @@ app.post('/api/forgot-password', async (req, res) => {
                 text: `Your OTP for password reset is: ${otp}. It will expire in 10 minutes.`
             });
         } catch (mailError) {
-            console.log("Email sending skipped (Check your .env EMAIL_USER credentials)");
+            console.error("❌ Email sending failed:", mailError.message);
+            // Don't leak credentials in logs, but enough to debug
         }
 
         res.json({ message: "OTP sent to your email" });
