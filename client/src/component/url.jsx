@@ -2,9 +2,10 @@ import axios from 'axios'
 import Swal from 'sweetalert2';
 
 const url = axios.create({
-    baseURL: "http://localhost:5000/api",
+    baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api",
     withCredentials: true
 })
+
 
 // Flag to prevent multiple redirects
 let isRedirecting = false;
