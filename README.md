@@ -88,11 +88,20 @@ GEMINI_API_KEY=your_google_ai_key
 EMAIL_USER=your_gmail@gmail.com
 EMAIL_PASS=your_app_password
 ADMIN_CREATION_KEY=your_secure_admin_creation_key
-ALLOWED_ORIGINS=http://localhost:5173
+ALLOWED_ORIGINS=http://localhost:5173,http://localhost:5174,http://127.0.0.1:5173
 ```
 
 ### 3. Configure Frontend
-Navigate to the `client` directory:
+Navigate to the `client` directory and create a `.env` file:
+```bash
+cd ../client
+npm install
+```
+
+**Frontend environment variables:**
+```env
+VITE_API_BASE_URL=http://localhost:5000/api
+```
 ```bash
 cd ../client
 npm install

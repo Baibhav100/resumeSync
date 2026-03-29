@@ -43,7 +43,19 @@ app.use(cors({
 // IMPROVED PDF GENERATION FUNCTION - Preserves resume structure
 // ============================================
 async function generateResumePDF(resumeText, userName = 'User') {
-    const browser = await puppeteer.launch({ args: ['--no-sandbox', '--disable-setuid-sandbox'] });
+    const browser = await puppeteer.launch({
+        headless: "new",
+        args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--disable-accelerated-2d-canvas',
+            '--no-first-run',
+            '--no-zygote',
+            '--single-process',
+            '--disable-gpu'
+        ]
+    });
     const page = await browser.newPage();
 
     // Intelligent parser that preserves the user's exact structure
@@ -529,7 +541,7 @@ app.post('/api/register', async (req, res) => {
         await Analytics.findOneAndUpdate(
             { date: today },
             { $inc: { registrations: 1 } },
-            { upsert: true, new: true }
+            { upsert: true, returnDocument: 'after' }
         );
 
         console.log("✅ User saved successfully!");
@@ -841,8 +853,14 @@ app.post('/api/logout', async (req, res) => {
         }
     }
 
-    res.clearCookie('token')
-        .clearCookie('refreshToken')
+    const cookieOptions = {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+    };
+
+    res.clearCookie('token', cookieOptions)
+        .clearCookie('refreshToken', cookieOptions)
         .json({ message: "Logged out successfully" });
 });
 
@@ -926,7 +944,19 @@ app.post('/api/tailor', upload.single('resumeFile'), async (req, res) => {
         let browser = null;
         try {
             console.log(`🔍 Attempting to scrape Job URL via Puppeteer: ${jobUrl}`);
-            browser = await puppeteer.launch({ headless: "new", args: ['--no-sandbox', '--disable-setuid-sandbox'] });
+            browser = await puppeteer.launch({
+                headless: "new",
+                args: [
+                    '--no-sandbox',
+                    '--disable-setuid-sandbox',
+                    '--disable-dev-shm-usage',
+                    '--disable-accelerated-2d-canvas',
+                    '--no-first-run',
+                    '--no-zygote',
+                    '--single-process',
+                    '--disable-gpu'
+                ]
+            });
             const page = await browser.newPage();
 
             await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
@@ -1166,7 +1196,7 @@ Output the tailored resume now (first line MUST be "# Name"):`;
         await Analytics.findOneAndUpdate(
             { date: today },
             { $inc: { resumeTailorings: 1 } },
-            { upsert: true, new: true }
+            { upsert: true, returnDocument: 'after' }
         );
 
         return res.status(200).json({
@@ -1280,7 +1310,7 @@ app.put('/api/profile', async (req, res) => {
         const user = await User.findByIdAndUpdate(
             decoded.id,
             updateFields,
-            { new: true, runValidators: true }
+            { returnDocument: 'after', runValidators: true }
         ).select('-password');
 
         if (!user) return res.status(404).json({ message: "User not found" });
@@ -1347,7 +1377,7 @@ app.put('/api/profile/resume-history/:recordId', async (req, res) => {
         const record = await ResumeHistory.findOneAndUpdate(
             { _id: recordId, userId: decoded.id },
             updates,
-            { new: true }
+            { returnDocument: 'after' }
         );
 
         if (!record) return res.status(404).json({ message: "Record not found" });
@@ -1410,7 +1440,7 @@ app.get('/api/profile/download/:recordId', async (req, res) => {
         await Analytics.findOneAndUpdate(
             { date: today },
             { $inc: { downloads: 1 } },
-            { upsert: true, new: true }
+            { upsert: true, returnDocument: 'after' }
         );
 
         res.setHeader('Content-Type', 'application/pdf');
@@ -1466,7 +1496,7 @@ app.get('/api/admin/users', adminAuth, async (req, res) => {
 app.put('/api/admin/users/:userId/block', adminAuth, async (req, res) => {
     try {
         const { userId } = req.params;
-        const user = await User.findByIdAndUpdate(userId, { isBlocked: true }, { new: true });
+        const user = await User.findByIdAndUpdate(userId, { isBlocked: true }, { returnDocument: 'after' });
         if (!user) return res.status(404).json({ message: "User not found" });
         // Log activity
         await logActivity(user._id, user.name, 'USER_BLOCKED', `User ${user.email} was blocked by admin`, req);
@@ -1479,7 +1509,7 @@ app.put('/api/admin/users/:userId/block', adminAuth, async (req, res) => {
 app.put('/api/admin/users/:userId/unblock', adminAuth, async (req, res) => {
     try {
         const { userId } = req.params;
-        const user = await User.findByIdAndUpdate(userId, { isBlocked: false }, { new: true });
+        const user = await User.findByIdAndUpdate(userId, { isBlocked: false }, { returnDocument: 'after' });
         if (!user) return res.status(404).json({ message: "User not found" });
 
         // Log activity
@@ -1572,7 +1602,7 @@ app.post('/api/analytics/visit', async (req, res) => {
         await Analytics.findOneAndUpdate(
             { date: today },
             { $inc: { visitors: 1 } },
-            { upsert: true, new: true }
+            { upsert: true, returnDocument: 'after' }
         );
         res.json({ success: true });
     } catch (err) {
@@ -1612,7 +1642,7 @@ app.get('/api/public/download/:recordId', async (req, res) => {
         await Analytics.findOneAndUpdate(
             { date: today },
             { $inc: { downloads: 1 } },
-            { upsert: true, new: true }
+            { upsert: true, returnDocument: 'after' }
         );
 
         // IMPORTANT: Disable caching to prevent 304 responses
@@ -1657,7 +1687,7 @@ app.get('/api/public/download-fresh/:recordId', async (req, res) => {
         await Analytics.findOneAndUpdate(
             { date: today },
             { $inc: { downloads: 1 } },
-            { upsert: true, new: true }
+            { upsert: true, returnDocument: 'after' }
         );
 
         // Disable caching completely
