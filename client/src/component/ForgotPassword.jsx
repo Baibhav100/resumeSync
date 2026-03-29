@@ -16,11 +16,17 @@ const ForgotPassword = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      await url.post('/forgot-password', { email });
+      const response = await url.post('/forgot-password', { email });
+      const receivedOtp = response.data.otp;
+      
       Swal.fire({
         icon: 'success',
-        title: 'OTP Sent',
-        text: 'A 6-digit verification code has been sent to your email (and printed in the server terminal).',
+        title: 'OTP Received',
+        html: `<p>A 6-digit verification code has been generated.</p>
+               <div style="background: #f1f5f9; padding: 15px; border-radius: 12px; margin-top: 15px;">
+                 <p style="margin-bottom: 5px; font-size: 14px; text-transform: uppercase; color: #64748b; font-weight: bold;">Your OTP Code:</p>
+                 <span style="font-size: 32px; color: #2563eb; font-weight: 800; font-family: monospace; letter-spacing: 4px;">${receivedOtp}</span>
+               </div>`,
         confirmButtonColor: '#3b82f6'
       });
       setStep(2);

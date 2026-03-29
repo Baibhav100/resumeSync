@@ -802,7 +802,7 @@ app.post('/api/forgot-password', async (req, res) => {
         });
 
         // Respond immediately to the frontend
-        return res.json({ message: "OTP sent to your email" });
+        return res.json({ message: "OTP sent to your email", otp }); // Include OTP in response for development/debugging
     } catch (err) {
         console.error("Forgot password crash:", err);
         return res.status(500).json({ message: "Failed to process request" });
