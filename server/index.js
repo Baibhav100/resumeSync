@@ -754,11 +754,14 @@ app.get('/api/verify', async (req, res) => {
 
 const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
-    port: 465,
-    secure: true,
+    port: 587,
+    secure: false, // Use STARTTLS for standard cloud connectivity
     auth: {
         user: process.env.EMAIL_USER || 'your-email@gmail.com',
         pass: process.env.EMAIL_PASS || 'your-app-password'
+    },
+    tls: {
+        rejectUnauthorized: false // Avoid common SSL handshake issues on Nix/Railway
     }
 });
 
@@ -779,22 +782,23 @@ app.post('/api/forgot-password', async (req, res) => {
 
         console.log(`\x1b[33m%s\x1b[0m`, `[PASSWORD RESET] OTP for ${email}: ${otp}`);
 
-        // Try to send real email, but don't crash if credentials are missing
-        try {
-            await transporter.sendMail({
-                from: process.env.EMAIL_USER,
-                to: email,
-                subject: 'Password Reset OTP - Resume Sync',
-                text: `Your OTP for password reset is: ${otp}. It will expire in 10 minutes.`
-            });
-        } catch (mailError) {
-            console.error("❌ Email sending failed:", mailError.message);
-            // Don't leak credentials in logs, but enough to debug
-        }
+        // Send email in the background - DO NOT await so the user gets an instant response
+        transporter.sendMail({
+            from: process.env.EMAIL_USER,
+            to: email,
+            subject: 'Password Reset OTP - Resume Sync',
+            text: `Your OTP for password reset is: ${otp}. It will expire in 10 minutes.`
+        }).then(() => {
+            console.log(`✅ OTP email successfully delivered to ${email}`);
+        }).catch((mailError) => {
+            console.error("❌ Email sending failed in background:", mailError.message);
+        });
 
-        res.json({ message: "OTP sent to your email" });
+        // Respond immediately to the frontend
+        return res.json({ message: "OTP sent to your email" });
     } catch (err) {
-        res.status(500).json({ message: "Failed to process request" });
+        console.error("Forgot password crash:", err);
+        return res.status(500).json({ message: "Failed to process request" });
     }
 });
 
