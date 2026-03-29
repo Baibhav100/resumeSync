@@ -1,4 +1,6 @@
 require('dotenv').config();
+const dns = require('dns');
+dns.setDefaultResultOrder('ipv4first'); // Force IPv4 to avoid ENETUNREACH errors on cloud platforms
 const express = require('express');
 const app = express();
 const cookieParser = require('cookie-parser');
@@ -754,8 +756,8 @@ app.get('/api/verify', async (req, res) => {
 
 const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
-    port: 587,
-    secure: false, // Use STARTTLS
+    port: 465,
+    secure: true, // Use direct SSL for better cloud compatibility
     auth: {
         user: process.env.EMAIL_USER || 'your-email@gmail.com',
         pass: process.env.EMAIL_PASS || 'your-app-password'
