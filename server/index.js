@@ -755,14 +755,19 @@ app.get('/api/verify', async (req, res) => {
 const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
     port: 587,
-    secure: false, // Use STARTTLS for standard cloud connectivity
+    secure: false, // Use STARTTLS
     auth: {
         user: process.env.EMAIL_USER || 'your-email@gmail.com',
         pass: process.env.EMAIL_PASS || 'your-app-password'
     },
     tls: {
-        rejectUnauthorized: false // Avoid common SSL handshake issues on Nix/Railway
-    }
+        rejectUnauthorized: false
+    },
+    debug: true, // Enable detailed SMTP logs
+    logger: true, // Print SMTP conversation locally/on Railway
+    connectionTimeout: 30000, // Wait 30s
+    greetingTimeout: 30000,
+    socketTimeout: 30000
 });
 
 // 1. Request OTP
