@@ -974,7 +974,15 @@ app.post('/api/tailor', upload.single('resumeFile'), async (req, res) => {
             const page = await browser.newPage();
 
             await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
-            await page.goto(jobUrl, { waitUntil: 'networkidle2', timeout: 15000 });
+            
+            // Wait for DOM content to be loaded (faster than networkidle2 on heavy sites like Capgemini)
+            await page.goto(jobUrl, { 
+                waitUntil: 'domcontentloaded', 
+                timeout: 30000 
+            });
+
+            // Extra wait to let some JS render if needed
+            await new Promise(r => setTimeout(r, 2000));
 
             const pageTitle = await page.title();
             if (pageTitle) {
@@ -987,9 +995,22 @@ app.post('/api/tailor', upload.single('resumeFile'), async (req, res) => {
             }
 
             jobDescription = await page.evaluate(() => {
+                // Focus on common Job description selectors
+                const selectors = [
+                    'article', 'main', '.job-description', '#job-details', 
+                    '.description', '.job-content', '[role="main"]', '.jobs-description-content'
+                ];
+                
+                let container = null;
+                for (const selector of selectors) {
+                    container = document.querySelector(selector);
+                    if (container) break;
+                }
+
+                // Clean up unnecessary noisy elements
                 document.querySelectorAll('script, style, noscript, nav, footer, header').forEach(el => el.remove());
-                const mainContainer = document.querySelector('article, main, .job-description, #job-details, .description');
-                let textContent = mainContainer ? mainContainer.innerText : document.body.innerText;
+                
+                let textContent = container ? container.innerText : document.body.innerText;
                 return textContent.replace(/\s\s+/g, ' ').trim();
             });
 
