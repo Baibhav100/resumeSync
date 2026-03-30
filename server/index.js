@@ -1042,28 +1042,25 @@ app.post('/api/tailor', upload.single('resumeFile'), async (req, res) => {
     }
 
     const apiKey = process.env.GEMINI_API_KEY?.trim();
-    console.log("🔑 API Key Check:", apiKey ? `LOADED (${apiKey.substring(0, 7)}...)` : "MISSING");
     if (!apiKey) {
         return res.status(500).json({ message: "Gemini API key is missing from backend (.env)" });
     }
 
     try {
-        const genAI = new GoogleGenerativeAI(apiKey);
-        
-        // 🔍 DEBUG: List all models available for THIS key
-        try {
-            const modelList = await genAI.listModels();
-            console.log("📜 Available Models for your API Key:");
-            modelList.models.forEach(m => console.log(`   - ${m.name} (Supports: ${m.supportedGenerationMethods})`));
-        } catch (listErr) {
-            console.warn("⚠️ Could not list models:", listErr.message);
-        }
+        // 🔍 DEBUG: Validate API Key
+        const trimmedKey = apiKey.trim();
+        console.log("🔑 API Key Status:", {
+            length: trimmedKey.length,
+            prefix: trimmedKey.substring(0, 7),
+            suffix: trimmedKey.substring(trimmedKey.length - 4),
+            hasWhitespace: apiKey !== trimmedKey
+        });
 
         const modelsToTry = [
+            "gemini-3-flash-preview",
             "gemini-1.5-flash", 
             "gemini-1.5-pro",
-            "gemini-pro",
-            "gemini-1.0-pro-001"
+            "gemini-pro"
         ];
 
         let tailoredResume = "";
@@ -1164,19 +1161,26 @@ Generate the tailored resume now (first line MUST be "# Name"):`;
 
         for (const modelName of modelsToTry) {
             try {
-                console.log(`📡 Attempting tailoring with model: ${modelName} via SDK v1...`);
-                const model = genAI.getGenerativeModel({ model: modelName, apiVersion: "v1" });
+                console.log(`📡 Attempting tailoring with model: ${modelName} via Axios v1beta...`);
+                // Revert to confirmed Axios format
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${trimmedKey}`;
                 
-                const result = await model.generateContent(enhancedPrompt);
-                const response = await result.response;
-                tailoredResume = response.text();
+                const response = await axios.post(apiUrl, {
+                    contents: [{
+                        parts: [{
+                            text: enhancedPrompt
+                        }]
+                    }]
+                });
 
-                if (tailoredResume && tailoredResume.length > 100) {
+                if (response.data?.candidates?.[0]?.content?.parts?.[0]?.text) {
+                    tailoredResume = response.data.candidates[0].content.parts[0].text;
                     successfulModel = modelName;
                     break;
                 }
             } catch (err) {
-                console.warn(`⚠️ Model ${modelName} failed:`, err.message);
+                const errMsg = err.response?.data?.error?.message || err.message;
+                console.warn(`⚠️ Model ${modelName} failed:`, errMsg);
                 lastError = err;
                 continue;
             }
