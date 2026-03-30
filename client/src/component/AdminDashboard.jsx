@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_BASE_URL } from './url';
 import { useSelector, useDispatch } from 'react-redux';
 import {
   getAllUsers,
@@ -342,7 +343,7 @@ useEffect(() => {
                           Preview
                         </button>
                         <button
-                          onClick={() => window.open(`/api/profile/download/${record._id}`, '_blank')}
+                          onClick={() => window.open(`${API_BASE_URL}/profile/download/${record._id}`, '_blank')}
                           className="btn btn-sm btn-primary"
                         >
                           Download

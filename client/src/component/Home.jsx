@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { tailorResume, clearCurrentResume, updateCurrentResumeText, updateResumeRecord } from '../slices/resumeSlice';
 import Swal from 'sweetalert2';
 import ResumePreview from './ResumePreview';
+import { API_BASE_URL } from './url';
 
 const Home = () => {
   const dispatch = useDispatch();
@@ -79,7 +80,7 @@ const handleDownload = async () => {
     
     // Simple approach: open the PDF in a new tab
     const timestamp = Date.now();
-    const pdfUrl = `/api/profile/download/${currentTailoredResume.recordId}?t=${timestamp}`;
+    const pdfUrl = `${API_BASE_URL}/profile/download/${currentTailoredResume.recordId}?t=${timestamp}`;
     
     console.log('🌐 Opening PDF URL:', pdfUrl);
     

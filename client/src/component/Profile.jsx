@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { getResumeHistory, deleteResumeRecord, updateResumeRecord, downloadResumePDF, setCurrentTailoredResume } from '../slices/resumeSlice';
 import { updateProfile } from '../slices/authSlice';
 import Swal from 'sweetalert2';
+import { API_BASE_URL } from './url';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -132,7 +133,7 @@ const Profile = () => {
   };
 
   const handleDownload = (recordId) => {
-    window.open(`/api/profile/download/${recordId}`, '_blank');
+    window.open(`${API_BASE_URL}/profile/download/${recordId}`, '_blank');
   };
 
   const handleRevisit = (record) => {
