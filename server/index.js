@@ -1048,13 +1048,12 @@ app.post('/api/tailor', upload.single('resumeFile'), async (req, res) => {
     }
 
     try {
+        const genAI = new GoogleGenerativeAI(apiKey);
         const modelsToTry = [
             "gemini-1.5-flash",
-            "gemini-1.5-flash-002",
-            "gemini-1.5-flash-8b",
             "gemini-1.5-pro",
             "gemini-1.0-pro",
-            "gemini-2.0-flash-exp" // Adding 2.0 as an experimental fallback
+            "gemini-1.5-flash-8b",
         ];
 
         let tailoredResume = "";
@@ -1155,24 +1154,19 @@ Generate the tailored resume now (first line MUST be "# Name"):`;
 
         for (const modelName of modelsToTry) {
             try {
-                console.log(`📡 Attempting tailoring with model: ${modelName}...`);
-                // Switch to v1 stable endpoint
-                const apiUrl = `https://generativelanguage.googleapis.com/v1/models/${modelName}:generateContent?key=${apiKey}`;
-                const response = await axios.post(apiUrl, {
-                    contents: [{
-                        parts: [{
-                            text: enhancedPrompt
-                        }]
-                    }]
-                });
+                console.log(`📡 Attempting tailoring with model: ${modelName} via SDK...`);
+                const model = genAI.getGenerativeModel({ model: modelName });
+                
+                const result = await model.generateContent(enhancedPrompt);
+                const response = await result.response;
+                tailoredResume = response.text();
 
-                if (response.data && response.data.candidates && response.data.candidates[0].content) {
-                    tailoredResume = response.data.candidates[0].content.parts[0].text;
+                if (tailoredResume && tailoredResume.length > 100) {
                     successfulModel = modelName;
                     break;
                 }
             } catch (err) {
-                console.warn(`⚠️ Model ${modelName} failed:`, err.response?.data?.error?.message || err.message);
+                console.warn(`⚠️ Model ${modelName} failed:`, err.message);
                 lastError = err;
                 continue;
             }
