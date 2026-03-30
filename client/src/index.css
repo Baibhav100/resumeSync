@@ -34,3 +34,86 @@ h1, h2, h3, h4, .font-heading {
   background: #ffffff;
   border-color: #3b82f6;
 }
+
+/* 🌀 Premium AI Loading Overlay */
+.loading-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(15, 23, 42, 0.85); /* Slate-900 with opacity */
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.ai-glow-container {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  margin-bottom: 2rem;
+}
+
+.ai-glow-orb {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6, #ec4899);
+  border-radius: 50%;
+  filter: blur(20px);
+  opacity: 0.7;
+  animation: pulse-glow 3s infinite alternate;
+}
+
+.ai-icon-inner {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  height: 100%;
+  background: rgba(15, 23, 42, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@keyframes pulse-glow {
+  0% { transform: scale(0.9); opacity: 0.4; }
+  100% { transform: scale(1.2); opacity: 0.8; }
+}
+
+.loading-text-container {
+  text-align: center;
+  color: white;
+  max-width: 400px;
+}
+
+.ai-tagline {
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #3b82f6;
+  margin-bottom: 0.5rem;
+  animation: fade-in-up 0.5s ease-out;
+}
+
+.ai-main-status {
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin-bottom: 0.75rem;
+}
+
+.ai-sub-status {
+  font-size: 0.9375rem;
+  color: #94a3b8;
+  font-weight: 400;
+  height: 1.5rem;
+}
+
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

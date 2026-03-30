@@ -128,8 +128,52 @@ const handleDownload = async () => {
     }
   };
 
+  // 🌀 Loading Logic for the Overlay
+  const [statusIndex, setStatusIndex] = useState(0);
+  const loadingStatuses = [
+    "Analyzing your career achievements...",
+    "Scanning job requirements for keywords...",
+    "Aligning your skills with the role...",
+    "Optimizing for ATS compatibility...",
+    "Polishing your professional summary...",
+    "Finalizing your tailored resume..."
+  ];
+
+  useEffect(() => {
+    let interval;
+    if (loading) {
+      interval = setInterval(() => {
+        setStatusIndex((prev) => (prev + 1) % loadingStatuses.length);
+      }, 2500);
+    } else {
+      setStatusIndex(0);
+    }
+    return () => clearInterval(interval);
+  }, [loading]);
+
+  const LoadingOverlay = () => (
+    <div className="loading-overlay">
+      <div className="ai-glow-container">
+        <div className="ai-glow-orb"></div>
+        <div className="ai-icon-inner">
+          <svg className="w-12 h-12 text-blue-400 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M13 10V3L4 14h7v7l9-11h-7z" />
+          </svg>
+        </div>
+      </div>
+      <div className="loading-text-container">
+        <p className="ai-tagline">AI Intelligence</p>
+        <h3 className="ai-main-status">Optimizing Your Career</h3>
+        <p className="ai-sub-status transition-opacity duration-500">
+          {loadingStatuses[statusIndex]}
+        </p>
+      </div>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-slate-50 py-12 px-4 sm:px-6 lg:px-8 font-sans">
+      {loading && <LoadingOverlay />}
       <div className="w-[95%] mx-auto">
         <div className="text-center mb-16">
           <h1 className="text-4xl lg:text-5xl font-extrabold text-slate-900 mb-4 px-2 tracking-tight font-heading">
