@@ -138,6 +138,16 @@ const AppContent = () => {
         <Route path="/register" element={user ? (user.role === 'admin' ? <Navigate to="/admin" /> : <Navigate to="/home" />) : <Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
       </Routes>
+      
+      {/* 🚀 Developer Credit Badge */}
+      <div className="fixed bottom-6 left-6 z-50 pointer-events-none hidden md:block">
+        <div className="glass-panel py-2 px-4 border-slate-200/50 flex items-center gap-2 bg-white/60 backdrop-blur-md shadow-lg rounded-xl">
+          <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
+          <p className="text-[11px] font-semibold uppercase tracking-widest text-slate-500">
+            Developed by <span className="text-slate-900 font-bold">Baibhav Rajkumar</span>
+          </p>
+        </div>
+      </div>
     </>
   )
 }
