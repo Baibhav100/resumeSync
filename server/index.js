@@ -1049,13 +1049,21 @@ app.post('/api/tailor', upload.single('resumeFile'), async (req, res) => {
 
     try {
         const genAI = new GoogleGenerativeAI(apiKey);
+        
+        // 🔍 DEBUG: List all models available for THIS key
+        try {
+            const modelList = await genAI.listModels();
+            console.log("📜 Available Models for your API Key:");
+            modelList.models.forEach(m => console.log(`   - ${m.name} (Supports: ${m.supportedGenerationMethods})`));
+        } catch (listErr) {
+            console.warn("⚠️ Could not list models:", listErr.message);
+        }
+
         const modelsToTry = [
-            "gemini-1.5-flash-latest",
-            "gemini-1.5-pro-latest",
-            "gemini-1.5-flash",
+            "gemini-1.5-flash", 
             "gemini-1.5-pro",
-            "gemini-1.0-pro-latest",
-            "gemini-pro"
+            "gemini-pro",
+            "gemini-1.0-pro-001"
         ];
 
         let tailoredResume = "";
