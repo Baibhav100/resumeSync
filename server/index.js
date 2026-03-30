@@ -1050,10 +1050,12 @@ app.post('/api/tailor', upload.single('resumeFile'), async (req, res) => {
     try {
         const genAI = new GoogleGenerativeAI(apiKey);
         const modelsToTry = [
+            "gemini-1.5-flash-latest",
+            "gemini-1.5-pro-latest",
             "gemini-1.5-flash",
             "gemini-1.5-pro",
-            "gemini-1.0-pro",
-            "gemini-1.5-flash-8b",
+            "gemini-1.0-pro-latest",
+            "gemini-pro"
         ];
 
         let tailoredResume = "";
@@ -1154,8 +1156,8 @@ Generate the tailored resume now (first line MUST be "# Name"):`;
 
         for (const modelName of modelsToTry) {
             try {
-                console.log(`📡 Attempting tailoring with model: ${modelName} via SDK...`);
-                const model = genAI.getGenerativeModel({ model: modelName });
+                console.log(`📡 Attempting tailoring with model: ${modelName} via SDK v1...`);
+                const model = genAI.getGenerativeModel({ model: modelName, apiVersion: "v1" });
                 
                 const result = await model.generateContent(enhancedPrompt);
                 const response = await result.response;
