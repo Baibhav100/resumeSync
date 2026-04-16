@@ -59,7 +59,7 @@ function parseResume(raw) {
     }
 
     // Section heading (## or ###)
-    const headingMatch = stripped.match(/^#{2,3}\s+(.+)$/);
+    const headingMatch = stripped.match(/^#{2,3}\s*(.+)$/);
     if (headingMatch) {
       if (current) sections.push(current);
       current = { title: headingMatch[1].trim().toUpperCase(), entries: [] };

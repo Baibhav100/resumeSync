@@ -43,8 +43,14 @@ const Home = () => {
 
     const result = await dispatch(tailorResume(formData));
     console.log('📊 Tailor response:', result);
-    if (result.payload) {
-      console.log('✅ New record ID:', result.payload.recordId);
+    if (tailorResume.fulfilled.match(result)) {
+      console.log('✅ New record ID:', result.payload?.recordId);
+    } else {
+      Swal.fire({
+          icon: 'error',
+          title: 'Tailor Failed',
+          text: result.payload?.message || result.error?.message || 'Failed to generate tailored resume'
+      });
     }
   };
 

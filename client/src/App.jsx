@@ -51,13 +51,16 @@ const AppContent = () => {
       }
     };
     
+    // Only verify if we have a user object in state (localStorage hydrate) or we are on a protected page
     verifyAuth();
     
     // Track visitor
     import('./component/url').then(({ default: url }) => {
       url.post('/analytics/visit').catch(err => console.log('Visitor tracking error:', err));
     });
-  }, [dispatch, navigate, isAuthPage, user]);
+    
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dispatch]);
 
   // Listen for force-logout event from axios interceptor
   useEffect(() => {

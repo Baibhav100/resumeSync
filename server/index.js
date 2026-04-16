@@ -54,7 +54,6 @@ async function generateResumePDF(resumeText, userName = 'User') {
             '--disable-accelerated-2d-canvas',
             '--no-first-run',
             '--no-zygote',
-            '--single-process',
             '--disable-gpu'
         ]
     });
@@ -967,7 +966,6 @@ app.post('/api/tailor', upload.single('resumeFile'), async (req, res) => {
                     '--disable-accelerated-2d-canvas',
                     '--no-first-run',
                     '--no-zygote',
-                    '--single-process',
                     '--disable-gpu'
                 ]
             });
@@ -1198,8 +1196,8 @@ Generate the tailored resume now (first line MUST be "# Name"):`;
 
         // Remove any summary sections that might have been added
         tailoredResume = tailoredResume
-            .replace(/^[\s\S]*?###\s*📊[\s\S]*?\n\n/m, '')
-            .replace(/^###?\s*(ATS Optimization Summary|Optimization Summary|Keywords Added|ATS Score)[\s\S]*?\n\n/im, '')
+            .replace(/###?\s*📊[\s\S]*?(?:\n\n|---|$)/gi, '')
+            .replace(/###?\s*(ATS Optimization Summary|Optimization Summary|Keywords Added|ATS Score)[\s\S]*?(?:\n\n|---|$)/gi, '')
             .replace(/^Here'?s?\s+(your\s+)?(optimized|tailored|ats-optimized)\s+resume[:\s]*\n+/i, '')
             .trim();
 
