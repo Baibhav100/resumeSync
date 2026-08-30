@@ -1,18 +1,18 @@
-# Step 1: Build Vite / React app using Node 20
+# Step 1: Build stage using Debian-based Node 20
 FROM node:20-slim AS build
 WORKDIR /app
 
-# Install native compilation libraries required by node-canvas
-RUN apk add --no-cache \
-    build-base \
-    g++ \
-    cairo-dev \
-    jpeg-dev \
-    pango-dev \
-    giflib-dev \
-    librsvg-dev \
+# Install dependencies using apt-get for node:20-slim
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    libcairo2-dev \
+    libpango1.0-dev \
+    libjpeg-dev \
+    libgif-dev \
+    librsvg2-dev \
     python3 \
-    make
+    make \
+    && rm -rf /var/lib/apt/lists/*
 
 COPY package*.json ./
 RUN npm install
@@ -20,7 +20,7 @@ RUN npm install
 COPY . .
 RUN npm run build
 
-# Step 2: Serve static files with Nginx
+# Step 2: Production stage using Nginx
 FROM nginx:alpine
 COPY --from=build /app/dist /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
