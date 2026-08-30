@@ -22,12 +22,15 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 app.use(express.json());
 app.use(cookieParser());
-const allowedOrigins = process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : [
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-    "http://localhost:5174",
-    "http://127.0.0.1:5174",
-];
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+    ? process.env.ALLOWED_ORIGINS.split(',').map(url => url.trim())
+    : [
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:5174",
+        "http://127.0.0.1:5174",
+        "http://localhost:3000"
+    ];
 
 app.use(cors({
     origin: function (origin, callback) {
@@ -47,6 +50,7 @@ app.use(cors({
 async function generateResumePDF(resumeText, userName = 'User') {
     const browser = await puppeteer.launch({
         headless: "new",
+        executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
         args: [
             '--no-sandbox',
             '--disable-setuid-sandbox',
@@ -972,11 +976,11 @@ app.post('/api/tailor', upload.single('resumeFile'), async (req, res) => {
             const page = await browser.newPage();
 
             await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
-            
+
             // Wait for DOM content to be loaded (faster than networkidle2 on heavy sites like Capgemini)
-            await page.goto(jobUrl, { 
-                waitUntil: 'domcontentloaded', 
-                timeout: 30000 
+            await page.goto(jobUrl, {
+                waitUntil: 'domcontentloaded',
+                timeout: 30000
             });
 
             // Extra wait to let some JS render if needed
@@ -995,10 +999,10 @@ app.post('/api/tailor', upload.single('resumeFile'), async (req, res) => {
             jobDescription = await page.evaluate(() => {
                 // Focus on common Job description selectors
                 const selectors = [
-                    'article', 'main', '.job-description', '#job-details', 
+                    'article', 'main', '.job-description', '#job-details',
                     '.description', '.job-content', '[role="main"]', '.jobs-description-content'
                 ];
-                
+
                 let container = null;
                 for (const selector of selectors) {
                     container = document.querySelector(selector);
@@ -1007,7 +1011,7 @@ app.post('/api/tailor', upload.single('resumeFile'), async (req, res) => {
 
                 // Clean up unnecessary noisy elements
                 document.querySelectorAll('script, style, noscript, nav, footer, header').forEach(el => el.remove());
-                
+
                 let textContent = container ? container.innerText : document.body.innerText;
                 return textContent.replace(/\s\s+/g, ' ').trim();
             });
@@ -1056,7 +1060,7 @@ app.post('/api/tailor', upload.single('resumeFile'), async (req, res) => {
 
         const modelsToTry = [
             "gemini-3-flash-preview",
-            "gemini-1.5-flash", 
+            "gemini-1.5-flash",
             "gemini-1.5-pro",
             "gemini-pro"
         ];
@@ -1162,7 +1166,7 @@ Generate the tailored resume now (first line MUST be "# Name"):`;
                 console.log(`📡 Attempting tailoring with model: ${modelName} via Axios v1beta...`);
                 // Revert to confirmed Axios format
                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${trimmedKey}`;
-                
+
                 const response = await axios.post(apiUrl, {
                     contents: [{
                         parts: [{
@@ -1815,4 +1819,4 @@ app.get('/api/admin/activity-logs', adminAuth, async (req, res) => {
 });
 // START SERVER
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+app.listen(PORT, '0.0.0.0', () => console.log(`🚀 Server running on port ${PORT}`));
