@@ -1,5 +1,5 @@
 # Step 1: Build Vite / React app using Node 20
-FROM node:20-alpine AS build
+FROM node:20-slim AS build
 WORKDIR /app
 
 # Install native compilation libraries required by node-canvas
